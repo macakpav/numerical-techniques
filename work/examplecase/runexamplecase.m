@@ -25,8 +25,10 @@ clc
 
 
 % Create a mesh
-seedI = LineSeed.lineSeedOneWayBias([0 0],[0.75 0],10,1.00,'o');
-seedJ = LineSeed.lineSeedOneWayBias([0 0],[0.5 0.5],5,1.00,'o');
+% seedI = LineSeed.lineSeedOneWayBias([0 0],[0.75 0],10,1.00,'o');
+% seedJ = LineSeed.lineSeedOneWayBias([0 0],[0.5 0.5],5,1.00,'o');
+seedI = LineSeed.lineSeedOneWayBias([0 0],[1 0],10,1.00,'o');
+seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 1],10,1.00,'o');
 casedef.boundarynames = {'WESTRAND','OOSTRAND','ZUIDRAND','NOORDRAND'};
 mesh  = TwoSeedMesher.genmesh(seedI,seedJ,casedef.boundarynames);
 % Create domain from mesh
@@ -57,14 +59,14 @@ casedef.BC{jBC}.data.bcval = 0;
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'OOSTRAND';
 casedef.BC{jBC}.kind   = 'Dirichlet';
-casedef.BC{jBC}.data.bcval = 0;
+casedef.BC{jBC}.data.bcval = 20;
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'ZUIDRAND';
-casedef.BC{jBC}.kind   = 'Dirichlet';
+casedef.BC{jBC}.kind   = 'Neumann';
 casedef.BC{jBC}.data.bcval = 0;
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'NOORDRAND';
-casedef.BC{jBC}.kind   = 'Dirichlet';
+casedef.BC{jBC}.kind   = 'Neumann';
 casedef.BC{jBC}.data.bcval = 0;
 
 
@@ -76,17 +78,16 @@ casedef.iteration.TTol     = 1e-6;
 % Call solver
 result = examplesolver(casedef);
 
-
 % Plot result
-figure; hold on; axis off; axis equal; colormap(jet(50));
-scale = 'lin'; lw = 1;
-% % fvmplotfield(T,scale,lw);
-% % Uoost = restrictto(U,getzone(casedef.dom,'OOSTRAND'));
-% % fvmplotvectorfield(Uoost,lw);
-fvmplotmesh(casedef.dom,lw);
-fvmplotcellnumbers(casedef.dom,8);
+figure; hold on; axis off; axis equal; colormap(jet(10));
+scale = 'lin'; lw = 0;
+fvmplotfield(result.T,scale,lw);
+% Uoost = restrictto(U,getzone(casedef.dom,'OOSTRAND'));
+% fvmplotvectorfield(Uoost,lw);
+% fvmplotmesh(casedef.dom,lw);
+% fvmplotcellnumbers(casedef.dom,8);
 % fvmplotfacenumbers(casedef.dom,8);
 % fvmplotvertexnumbers(casedef.dom,8);
-
+% fvmplotnormals(casedef.dom,lw);
 
 

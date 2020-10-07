@@ -197,23 +197,25 @@ methods (Access=public)
 
 
       % Calculate other geometrical data ==================================
-      this.fCoord = calc_fCentr(...
+      this.fCoord = calc_fCentr(...  %DONE
          this.nF,this.fNbVLoc,this.fNbV,this.vCoord);
 
-      this.fArea = calc_fArea(this.nF,...
+      this.fArea = calc_fArea(this.nF,... %DONE
          this.fNbVLoc,this.fNbV,this.vCoord);
-    
-      this.fNormal = calc_fNormal(this.fNbVLoc,this.fNbV,...
+       
+      this.fTangent = calc_fTangent(this.fNbVLoc,this.fNbV,... %DONE
          this.vCoord,this.fArea);
+       
+      this.fNormal = calc_fNormal(this.fTangent);
       
-      this.fTangent = calc_fTangent(this.nF,this.fNormal);
+      
              
       [this.cVol this.cCoord] = calc_cVol_cCoord(this.nC,this.nPc,...
          this.vCoord,this.fCoord,...
          this.cNbFLoc,this.cNbF,this.fNbVLoc,this.fNbV,...
          this.fNbCLoc,this.fNbC);
            
-      this.fXi = calc_fXi(this.nF,...
+      this.fXi = calc_fXi(this.nF,... %DONE
          this.cCoord,...
          this.fNbCLoc,this.fNbC);
       this.fXiMag = calc_fXiMag(this.nF,this.fXi);

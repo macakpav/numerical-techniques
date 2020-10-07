@@ -11,6 +11,7 @@
 function result = examplesolver(casedef)
 
 dom = casedef.dom;
+k=1;
 
 % Create field objects
 T = Field(dom.allCells,0);      % Temperature [K] (scalar); empty field
@@ -30,15 +31,78 @@ while iterate
    % Set all terms to zero
    reset(eqn); 
    
+   adiag = zeros(dom.nC,1);
+   bdata = zeros(dom.nC,1);
+   anb_internal = zeros(2*dom.nIf,1);
+   anb_boundary = zeros(2*dom.nBf,1);
+   
+   for i = 1:dom.nIf % loop over internal faces
+      PC=dom.fNbC(2*i-1); %physical cell index
+      NBC=dom.fNbC(2*i); %neighbor cell
+      xiMag=dom.fXiMag(i); % length of Xi vector (distance between centers)
+      fArea=dom.fArea(i); % area of the face
+      
+      anb=k*fArea/xiMag;
+      adiag(PC) = adiag(PC)-anb; %diagonal elements
+      adiag(NBC) = adiag(NBC)-anb;
+      anb_internal(2*i-1) = anb; %offdiagonal elements
+      anb_internal(2*i) = anb;
+   end
+
+   for i = 1:length(casedef.BC) %loop over all boundary zones
+     Bzone = dom.getzone(casedef.BC{i}.zoneID);
+     Brange = Bzone.range(1):Bzone.range(2);
+     Bkind = casedef.BC{i}.kind;
+     Bcoef = casedef.BC{i}.data.bcval;
+     
+     if (Bkind == "Dirichlet")
+       for i = Brange
+        Cind=dom.fNbC(2*(i-1)+1:2*i); % indicies of neighbour cells
+        PC=Cind(1);
+        GC=Cind(2);
+        
+        xiMag=dom.fXiMag(i); % length of Xi vector (distance between centers)
+        fArea=dom.fArea(i); % area of the face
+
+        anb=k*fArea/xiMag;
+        adiag(PC) = adiag(PC)-anb;
+        adiag(GC) = 0.5;
+        anb_boundary(2*(i-dom.nIf)-1) = anb;
+        anb_boundary(2*(i-dom.nIf)) = 0.5;
+        bdata(GC) = Bcoef;      
+       end
+     elseif (Bkind == "Neumann")
+       for i = Brange
+        Cind=dom.fNbC(2*(i-1)+1:2*i); % indicies of neighbour cells
+        PC=Cind(1);
+        GC=Cind(2);
+        
+        xiMag=dom.fXiMag(i); % length of Xi vector (distance between centers)
+        fArea=dom.fArea(i); % area of the face
+
+        anb=k*fArea/xiMag;
+        adiag(PC) = adiag(PC)-anb;
+        adiag(GC) = 1/xiMag;
+        anb_boundary(2*(i-dom.nIf)-1) = anb;
+        anb_boundary(2*(i-dom.nIf)) = -1/xiMag;
+        bdata(GC) = Bcoef;
+       end
+     else
+       printf("Unknown kind of boundary condition for zone %s", Bzone.id)
+     end
+     
+   end
+   
    % Compute coefficients for physical cell eqns and add them to eqn object
    % ...
    % Compute coefficients for ghost cell eqns and add them to eqn object
    % ...
-   eqn.adata = rand(eqn.nnz,1); % just a meaningless example adata
-   eqn.bdata = rand(eqn.n,1);   % just a meaningless example bdata
+   eqn.adata = [adiag; anb_internal; anb_boundary]; % just a meaningless example adata
+   eqn.bdata = bdata;   % just a meaningless example bdata
       
    % Create a matlab sparse linear system from the eqn object
    [A,b] = to_msparse(eqn);
+   %spy(A);
    x = get(T);
    x = x';
    
