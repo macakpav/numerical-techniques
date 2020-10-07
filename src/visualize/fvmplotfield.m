@@ -105,6 +105,7 @@ function gh = fvmplotfield(a,scaleSpec,lw,c1,c2)
          'VertexNormalsMode','manual','FaceNormalsMode','manual',...
          'HitTest','on','FaceColor',fc,...
          'LineStyle',ls,'LineWidth',lw,'EdgeColor',ec);
+    colorbar
    
     
 end
