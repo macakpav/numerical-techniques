@@ -31,51 +31,46 @@ while iterate
    
    niter = niter+1;
    
-   % Set all terms to zero
+% Set all terms to zero
    reset(eqn); 
    
+% Create sparse matrix parts
    adiag = zeros(dom.nC,1);
    bdata = zeros(dom.nC,1);
    anb_internal = zeros(2*dom.nIf,1);
    anb_boundary = zeros(2*dom.nBf,1);
    
 % Compute coefficients for physical cell eqns and add them to eqn object
-   for i = 1:dom.nIf % loop over internal faces
-      PC=dom.fNbC(2*i-1); %physical cell index
-      NBC=dom.fNbC(2*i); %neighbor cell
+   for i = 1:dom.nF % loop over internal faces
+      PC=dom.fNbC(2*i-1); % physical cell index
+      NBC=dom.fNbC(2*i); % neighbor cell
       xiMag=dom.fXiMag(i); % length of Xi vector (distance between centers)
       fArea=dom.fArea(i); % area of the face
       fUnorm=Unorm(i); % scalar product of faceNormal and Uface(interpolated U on the face)
       
-      anb_conv=fArea*fUnorm; %convective term
-      anb_diff=k*fArea/xiMag; %diffusive term
+      anb_conv=fArea*fUnorm; % convective term
+      anb_diff=k*fArea/xiMag; % diffusive term
       
-      adiag(PC) = adiag(PC)-anb_diff-anb_conv; %diagonal elements
-      adiag(NBC) = adiag(NBC)-anb_diff+anb_conv;
-      anb_internal(2*i-1) = anb_diff-anb_conv; %offdiagonal elements
-      anb_internal(2*i) = anb_diff+anb_conv;
+      if i <= dom.nIf
+        adiag(PC) = adiag(PC)-anb_diff-anb_conv; % diagonal element
+        adiag(NBC) = adiag(NBC)-anb_diff+anb_conv;
+        anb_internal(2*i-1) = anb_diff-anb_conv; % offdiagonal element
+        anb_internal(2*i) = anb_diff+anb_conv;
+      else
+        adiag(PC) = adiag(PC)-anb_diff-anb_conv; % diagonal element
+        anb_boundary(2*(i-dom.nIf)-1) = anb_diff-anb_conv; % offdiagonal element
+      end
    end
 
 % Compute coefficients for ghost cell eqns and add them to eqn object
-    for i = 1:length(casedef.BC) %loop over all boundary zones
-      Bzone = dom.getzone(casedef.BC{i}.zoneID);
-      Brange = Bzone.range(1):Bzone.range(2);
-      Bkind = casedef.BC{i}.kind;
-      Bcoef = casedef.BC{i}.data.bcval;
+    for j = 1:length(casedef.BC) % loop over all boundary zones
+      Bzone = dom.getzone(casedef.BC{j}.zoneID);
+      Brange = Bzone.range(1):Bzone.range(2); %range of boundary face indicies
+      Bkind = casedef.BC{j}.kind;
+      Bcoef = casedef.BC{j}.data.bcval;
 
       for i = Brange
-        Cind=dom.fNbC(2*(i-1)+1:2*i); % indicies of neighbour cells
-        PC=Cind(1);
-        GC=Cind(2);
-        fUnorm=Unorm(i);
-
-        xiMag=dom.fXiMag(i); % length of Xi vector (distance between centers)
-        fArea=dom.fArea(i); % area of the face
-
-        anb_conv=fArea*fUnorm;
-        anb_diff=k*fArea/xiMag;
-        adiag(PC) = adiag(PC)-anb_diff-anb_conv;
-        anb_boundary(2*(i-dom.nIf)-1) = anb_diff-anb_conv;
+        GC=dom.fNbC(2*i); % ghost cell index
         bdata(GC) = Bcoef;
 
         if (Bkind == "Dirichlet")
@@ -87,13 +82,11 @@ while iterate
         else
           printf("Unknown kind of boundary condition for zone %s", Bzone.id)
         end
-     end
-     
-     
-   end
+      end
+    end
 
-   eqn.adata = [adiag; anb_internal; anb_boundary]; % just a meaningless example adata
-   eqn.bdata = bdata;   % just a meaningless example bdata
+   eqn.adata = [adiag; anb_internal; anb_boundary];
+   eqn.bdata = bdata;
       
    % Create a matlab sparse linear system from the eqn object
    [A,b] = to_msparse(eqn);
