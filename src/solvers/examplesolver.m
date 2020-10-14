@@ -48,7 +48,7 @@ while iterate
       fArea=dom.fArea(i); % area of the face
       fUnorm=Unorm(i); % scalar product of faceNormal and Uface(interpolated U on the face)
       
-      anb_conv=fArea*fUnorm; % convective term
+      anb_conv=fArea*fUnorm/2; % convective term
       anb_diff=k*fArea/xiMag; % diffusive term
       
       if i <= dom.nIf

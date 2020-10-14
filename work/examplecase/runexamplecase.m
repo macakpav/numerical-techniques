@@ -93,3 +93,6 @@ plot(xmesh,t_plot,'linewidth',2)
 set(gca,'Fontsize',12);xlabel('x','Fontsize',14);ylabel('\phi','Fontsize',14)
 title('Cross section of species value')
 grid on
+hold on
+plot(xmesh, analyticalConvectionDiffusion(xmesh, Lx, uniformU(1), 1, casedef.material.k, BCval(1), BCval(2)),'*')
+
