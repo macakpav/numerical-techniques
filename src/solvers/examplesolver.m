@@ -22,7 +22,7 @@ dt = casedef.iteration.dt;
 pIn = casedef.vars.pIn;
 pOut = casedef.vars.pOut;
 L = casedef.vars.L;
-dp = (pOut-pIn)/L;
+dp = -(pOut-pIn)/L;
 
 % Create an equation object for holding a scalar conservation equation
 eqn_u = ScalarFvEqn2(dom);
@@ -61,27 +61,36 @@ while iterate
     xiMag = dom.fXiMag(i); % length of Xi vector (distance between centers)
     fArea = dom.fArea(i); % area of the face
     fUnorm = Unorm(i); % scalar product of faceNormal and Uface(interpolated U on the face)
+    cVols = dom.cVol([PC,NBC]);
 
     anb_conv = fArea * fUnorm / 2; % convective term
     anb_diff = nu * fArea / xiMag; % diffusive term
 
     if i <= dom.nIf
-      adiag_u(PC) = adiag_u(PC) - anb_diff - anb_conv; % diagonal element
-      adiag_u(NBC) = adiag_u(NBC) - anb_diff + anb_conv;
+      adiag_u(PC) = adiag_u(PC) - anb_diff - anb_conv + (cVols(1)/dt)/4; % diagonal element
+      adiag_u(NBC) = adiag_u(NBC) - anb_diff + anb_conv + (cVols(2)/dt)/4;
       
-      adiag_v(PC) = adiag_v(PC) - anb_diff - anb_conv; % diagonal element
-      adiag_v(NBC) = adiag_v(NBC) - anb_diff + anb_conv;
+      adiag_v(PC) = adiag_v(PC) - anb_diff - anb_conv + (cVols(1)/dt)/4; % diagonal element
+      adiag_v(NBC) = adiag_v(NBC) - anb_diff + anb_conv + (cVols(2)/dt)/4;
       
       anb_internal_u(2*i-1) = anb_diff - anb_conv; % offdiagonal element
       anb_internal_u(2*i) = anb_diff + anb_conv;
       
       anb_internal_v(2*i-1) = anb_diff - anb_conv; % offdiagonal element
       anb_internal_v(2*i) = anb_diff + anb_conv;
+      
+      
+      bdata_u(PC) = bdata_u(PC) + (Uold.data(1,PC) * cVols(1) / dt - dp/rho * cVols(1)) /4;
+      bdata_v(PC) = bdata_v(PC) + (Uold.data(2,PC) * cVols(1) / dt) /4;
+      bdata_u(NBC) = bdata_u(NBC) + (Uold.data(1,NBC) * cVols(2) / dt - dp/rho * cVols(2)) /4;
+      bdata_v(NBC) = bdata_v(NBC) + (Uold.data(2,NBC) * cVols(2) / dt) /4;
     else
-      adiag_u(PC) = adiag_u(PC) - anb_diff - anb_conv; % diagonal element
-      anb_boundary_u(2*(i - dom.nIf)-1) = anb_diff - anb_conv; % offdiagonal element
-      adiag_v(PC) = adiag_v(PC) - anb_diff - anb_conv; % diagonal element
-      anb_boundary_v(2*(i - dom.nIf)-1) = anb_diff - anb_conv; % offdiagonal element
+      adiag_u(PC) = adiag_u(PC) - anb_diff - anb_conv + (cVols(1)/dt)/4;
+      anb_boundary_u(2*(i - dom.nIf)-1) = anb_diff - anb_conv;
+      adiag_v(PC) = adiag_v(PC) - anb_diff - anb_conv + (cVols(1)/dt)/4;
+      anb_boundary_v(2*(i - dom.nIf)-1) = anb_diff - anb_conv;
+      bdata_u(PC) = bdata_u(PC) + (Uold.data(1,PC) * cVols(1) / dt - dp/rho * cVols(1)) /4;
+      bdata_v(PC) = bdata_v(PC) + (Uold.data(2,PC) * cVols(1) / dt) /4;
     end
   end
 
@@ -114,15 +123,15 @@ while iterate
   end
   
   % False time stepping and volume source terms
-  for i = 1:dom.nC
-    PC = i;
-    cVol = dom.cVol(PC);
-    
-    adiag_u(PC) = adiag_u(PC) + cVol/dt; % diagonal element
-    adiag_v(PC) = adiag_v(PC) + cVol/dt;
-    bdata_u(PC) = bdata_u(PC) + Uold.data(1,PC) * cVol / dt - dp/rho * cVol;
-    bdata_u(PC) = bdata_u(PC) + Uold.data(2,PC) * cVol / dt;%- dp/rho * cVol;
-  end
+%   for i = 1:dom.nC
+%     PC = i;
+%     cVol = dom.cVol(PC);
+%     
+%     adiag_u(PC) = adiag_u(PC) + cVol/dt; % diagonal element
+%     adiag_v(PC) = adiag_v(PC) + cVol/dt;
+%     bdata_u(PC) = bdata_u(PC) + Uold.data(1,PC) * cVol / dt - dp/rho * cVol;
+%     bdata_v(PC) = bdata_v(PC) + Uold.data(2,PC) * cVol / dt;%- dp/rho * cVol;
+%   end
 
   eqn_u.adata = [adiag_u; anb_internal_u; anb_boundary_u];
   eqn_u.bdata = bdata_u;
