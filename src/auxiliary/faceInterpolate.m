@@ -1,12 +1,13 @@
-function Uface=faceInterpolate(dom,U)
-tempUface=zeros(2,dom.nF);
+function fieldFace=faceInterpolate(dom,field)
+tempFace=zeros(field.dim,dom.nF);
 for i=1:dom.nF
   PC=dom.fNbC(2*i-1); %physical cell index
   NBC=dom.fNbC(2*i); %neighbor cell
-  tempUface(:,i)=(U.data(:,PC)+U.data(:,NBC))/2.0;
+  fXiLambda=dom.fXiLambda(i);
+  tempFace(:,i)=( (1-fXiLambda)*field.data(:,PC) + fXiLambda*field.data(:,NBC) );
 end
 
-Uface = Field(dom.allFaces,1);     % Velocity [m/s] (vector);
-set(Uface,tempUface);
+fieldFace = Field(dom.allFaces,1);     % Velocity [m/s] (vector);
+set(fieldFace,tempFace);
 
 end
