@@ -21,12 +21,12 @@
 %      your source code.
 
 clear variables
-clc
+% clc
 close all
 
 %% Case parameters
-Lx=1; Nx=100;
-Ly=1; Ny=100;
+Lx=1; Nx=10;
+Ly=1; Ny=10;
 uniformU=[0,0]; %initial velocity field
 
 casedef.boundarynames = { 'WEST', 'EAST', 'SOUTH', 'NORTH' };
@@ -93,17 +93,22 @@ fvmplotmesh(casedef.dom,lw);
 
 %% Cross section
 
-ymesh = linspace(0,Ly,Ny);
-u_plot = u.data(3*Ny+1:4*Ny);
+ymesh = linspace(Ly/Ny/2,Ly-Ly/Ny/2,Ny);
+u_sim = u.data(3*Ny+1:4*Ny);
+dp = (casedef.vars.pOut-casedef.vars.pIn)/casedef.vars.L;
+
+u_anal = analyticalCanalFlow(ymesh,dp,Ly,casedef.material.nu*casedef.material.rho);
+
+rel_error = norm(u_sim-u_anal)/norm(u_anal);
+fprintf("Relative error of numerical solution: %10.4e\n", rel_error);
 
 figure()
-plot(u_plot,ymesh,'linewidth',2)
+plot(u_sim,ymesh,'linewidth',2)
 set(gca,'Fontsize',12);ylabel('y','Fontsize',14);xlabel('U_x','Fontsize',14)
 title('Cross section of U_x')
 grid on
 hold on
-dp = (casedef.vars.pOut-casedef.vars.pIn)/casedef.vars.L;
-plot(analyticalCanalFlow(ymesh,dp,Ly,casedef.material.nu*casedef.material.rho),ymesh, '*') %analyticalConvectionDiffusion(xmesh, Lx, uniformU(1), 1, casedef.material.k, BCval(1), BCval(2)),'*')
+plot(u_anal,ymesh, '*') %analyticalConvectionDiffusion(xmesh, Lx, uniformU(1), 1, casedef.material.k, BCval(1), BCval(2)),'*')
 
 
 % xmesh = linspace(0,Lx,Nx);
