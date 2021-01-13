@@ -60,8 +60,8 @@ while iterate
     fUnorm = Unorm(i); % scalar product of faceNormal and Uface(interpolated U on the face)
     cVols = dom.cVol([PC,NBC]);
 
-    anb_conv = fArea * fUnorm / 2; % convective term
-    anb_diff = nu * fArea / xiMag; % diffusive term
+    anb_conv = -fArea * fUnorm / 2; % convective term
+    anb_diff = -nu * fArea / xiMag; % diffusive term
 
     if i <= dom.nIf
       adiag_u(PC) = adiag_u(PC) - anb_diff - anb_conv + (cVols(1)/dt)/4; % diagonal element

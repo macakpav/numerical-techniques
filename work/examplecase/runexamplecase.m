@@ -32,7 +32,7 @@ uniformU=[0,0]; %initial velocity field
 rotation_vector=[1,0]/sqrt(1);
 
 northUx = 5;
-dp = 100;
+dp = -100;
 gradP = dp * rotation_vector;
 
 casedef.boundarynames = { 'WEST', 'EAST', 'SOUTH', 'NORTH' };
@@ -88,7 +88,7 @@ end
 
 %% Set up iteration parameters
 casedef.iteration.maxniter = 1000;
-casedef.iteration.TTol     = 1e-6;
+casedef.iteration.TTol     = 1e-9;
 casedef.iteration.dt       = 50;
 
 %% Call solver
