@@ -19,10 +19,8 @@ U = casedef.vars.Uinit;
 nu = casedef.material.nu;
 rho = casedef.material.rho;
 dt = casedef.iteration.dt;
-pIn = casedef.vars.pIn;
-pOut = casedef.vars.pOut;
 L = casedef.vars.L;
-dp = -(pOut-pIn)/L;
+gradP = casedef.vars.gradP;
 
 % Create an equation object for holding a scalar conservation equation
 eqn_u = ScalarFvEqn2(dom);
@@ -80,17 +78,17 @@ while iterate
       anb_internal_v(2*i) = anb_diff + anb_conv;
       
       
-      bdata_u(PC) = bdata_u(PC) + (Uold.data(1,PC) * cVols(1) / dt - dp/rho * cVols(1)) /4;
-      bdata_v(PC) = bdata_v(PC) + (Uold.data(2,PC) * cVols(1) / dt) /4;
-      bdata_u(NBC) = bdata_u(NBC) + (Uold.data(1,NBC) * cVols(2) / dt - dp/rho * cVols(2)) /4;
-      bdata_v(NBC) = bdata_v(NBC) + (Uold.data(2,NBC) * cVols(2) / dt) /4;
+      bdata_u(PC) = bdata_u(PC) + (Uold.data(1,PC) * cVols(1) / dt - gradP(1)/rho * cVols(1)) /4;
+      bdata_v(PC) = bdata_v(PC) + (Uold.data(2,PC) * cVols(1) / dt - gradP(2)/rho * cVols(1)) /4;
+      bdata_u(NBC) = bdata_u(NBC) + (Uold.data(1,NBC) * cVols(2) / dt - gradP(1)/rho * cVols(2)) /4;
+      bdata_v(NBC) = bdata_v(NBC) + (Uold.data(2,NBC) * cVols(2) / dt - gradP(2)/rho * cVols(2)) /4;
     else
       adiag_u(PC) = adiag_u(PC) - anb_diff - anb_conv + (cVols(1)/dt)/4;
       anb_boundary_u(2*(i - dom.nIf)-1) = anb_diff - anb_conv;
       adiag_v(PC) = adiag_v(PC) - anb_diff - anb_conv + (cVols(1)/dt)/4;
       anb_boundary_v(2*(i - dom.nIf)-1) = anb_diff - anb_conv;
-      bdata_u(PC) = bdata_u(PC) + (Uold.data(1,PC) * cVols(1) / dt - dp/rho * cVols(1)) /4;
-      bdata_v(PC) = bdata_v(PC) + (Uold.data(2,PC) * cVols(1) / dt) /4;
+      bdata_u(PC) = bdata_u(PC) + (Uold.data(1,PC) * cVols(1) / dt - gradP(1)/rho * cVols(1)) /4;
+      bdata_v(PC) = bdata_v(PC) + (Uold.data(2,PC) * cVols(1) / dt - gradP(2)/rho * cVols(1)) /4;
     end
   end
 
