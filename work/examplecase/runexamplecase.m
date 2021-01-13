@@ -29,13 +29,15 @@ Lx=1; Nx=10;
 Ly=1; Ny=10;
 uniformU=[0,0]; %initial velocity field
 
+rotation_vector=[1,0]/sqrt(1);
+
 northUx = 5;
 dp = 100;
-gradP = dp * [ 1, 0 ];
+gradP = dp * rotation_vector;
 
 casedef.boundarynames = { 'WEST', 'EAST', 'SOUTH', 'NORTH' };
 BCtype = { 'Neumann', 'Neumann', 'Dirichlet', 'Dirichlet'  };
-BCval = [ 0 0; 0 0; 0 0; northUx*[1 0] ];
+BCval = [ 0 0; 0 0; 0 0; northUx*rotation_vector ];
 
 %% Create a mesh
 seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.00,'o');
@@ -61,7 +63,6 @@ casedef.material.rho = 10;
 
 casedef.vars.Uinit = U;
 casedef.vars.gradP = gradP;
-casedef.vars.L = Lx;
 
 %% Define boundary conditions
 for i = 1:length(casedef.boundarynames)
@@ -100,7 +101,7 @@ fvmplotmesh(casedef.dom,lw);
 ymesh = linspace(Ly/Ny/2,Ly-Ly/Ny/2,Ny);
 u_sim = u.data(3*Ny+1:4*Ny);
 
-u_anal = analyticalCanalFlow(ymesh,-dp,Ly,casedef.material.nu*casedef.material.rho, northUx);
+u_anal = analyticalCanalFlow(ymesh,-norm(gradP),Ly,casedef.material.nu*casedef.material.rho, northUx);
 
 rel_error = norm(u_sim-u_anal)/norm(u_anal);
 fprintf("Relative error of numerical solution: %10.4e\n", rel_error);

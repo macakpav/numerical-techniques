@@ -19,7 +19,6 @@ U = casedef.vars.Uinit;
 nu = casedef.material.nu;
 rho = casedef.material.rho;
 dt = casedef.iteration.dt;
-L = casedef.vars.L;
 gradP = casedef.vars.gradP;
 
 % Create an equation object for holding a scalar conservation equation
