@@ -1,2 +1,10 @@
 # Matlab
 *.asv
+
+
+#LaTex stuff
+*.aux
+*.toc
+*.synctex.gz
+*.pdf
+*.log
