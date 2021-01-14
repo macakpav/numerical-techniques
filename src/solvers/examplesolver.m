@@ -27,7 +27,6 @@ eqn_v = ScalarFvEqn2(dom);
 
 iterate = true;
 niter = 0;
-Uold = U;
 while iterate
 
   niter = niter + 1;
@@ -77,17 +76,17 @@ while iterate
       anb_internal_v(2*i) = anb_diff + anb_conv;
       
       
-      bdata_u(PC) = bdata_u(PC) + (Uold.data(1,PC) * cVols(1) / dt - gradP(1)/rho * cVols(1)) /4;
-      bdata_v(PC) = bdata_v(PC) + (Uold.data(2,PC) * cVols(1) / dt - gradP(2)/rho * cVols(1)) /4;
-      bdata_u(NBC) = bdata_u(NBC) + (Uold.data(1,NBC) * cVols(2) / dt - gradP(1)/rho * cVols(2)) /4;
-      bdata_v(NBC) = bdata_v(NBC) + (Uold.data(2,NBC) * cVols(2) / dt - gradP(2)/rho * cVols(2)) /4;
+      bdata_u(PC) = bdata_u(PC) + (U.data(1,PC) * cVols(1) / dt - gradP(1)/rho * cVols(1)) /4;
+      bdata_v(PC) = bdata_v(PC) + (U.data(2,PC) * cVols(1) / dt - gradP(2)/rho * cVols(1)) /4;
+      bdata_u(NBC) = bdata_u(NBC) + (U.data(1,NBC) * cVols(2) / dt - gradP(1)/rho * cVols(2)) /4;
+      bdata_v(NBC) = bdata_v(NBC) + (U.data(2,NBC) * cVols(2) / dt - gradP(2)/rho * cVols(2)) /4;
     else
       adiag_u(PC) = adiag_u(PC) - anb_diff - anb_conv + (cVols(1)/dt)/4;
       anb_boundary_u(2*(i - dom.nIf)-1) = anb_diff - anb_conv;
       adiag_v(PC) = adiag_v(PC) - anb_diff - anb_conv + (cVols(1)/dt)/4;
       anb_boundary_v(2*(i - dom.nIf)-1) = anb_diff - anb_conv;
-      bdata_u(PC) = bdata_u(PC) + (Uold.data(1,PC) * cVols(1) / dt - gradP(1)/rho * cVols(1)) /4;
-      bdata_v(PC) = bdata_v(PC) + (Uold.data(2,PC) * cVols(1) / dt - gradP(2)/rho * cVols(1)) /4;
+      bdata_u(PC) = bdata_u(PC) + (U.data(1,PC) * cVols(1) / dt - gradP(1)/rho * cVols(1)) /4;
+      bdata_v(PC) = bdata_v(PC) + (U.data(2,PC) * cVols(1) / dt - gradP(2)/rho * cVols(1)) /4;
     end
   end
 
